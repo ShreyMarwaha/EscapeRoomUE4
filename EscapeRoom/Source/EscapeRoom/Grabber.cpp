@@ -51,20 +51,25 @@ void UGrabber::SetupInputComponent() {
 }
 
 
-
 void UGrabber::Grab(){
 	UE_LOG(LogTemp, Warning, TEXT("Grab Pressed"));
 
 	/// LINE TRACE and see if we reach any actors with the physics body collision chaned set
-	GetFirstPhysicsBodyInReach();
+	auto HitResult = GetFirstPhysicsBodyInReach();
+	auto ComponentToGrab = HitResult.GetComponent();
+	auto ActorHIt = HitResult.GetActor();
 
 	/// iF we hit something attach a pysics handle
-	//TODO: attach physics handle
+	if(ActorHIt)
+		// attach physics handle
+		PhysicsHandle->GrabComponent(ComponentToGrab, NAME_None, ComponentToGrab->GetOwner()->GetActorLocation(), true);
+
 }
 
 void UGrabber::Release(){
 	UE_LOG(LogTemp, Warning, TEXT("Grab released"));
 	// TODO: release physics handle
+	PhysicsHandle->ReleaseComponent();
 }
 
 
@@ -72,8 +77,17 @@ void UGrabber::Release(){
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction){
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
+	/// Get player view point this tick
+	FVector PlayerViewPointLocation;
+	FRotator PlayerViewPointRotation;
+	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
+	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
+
 	// if the physics hadle is attached
-		// move the obj the we are holding
+	if (PhysicsHandle->GrabbedComponent)
+	{	// move the obj the we are holding
+		PhysicsHandle->SetTargetLocation(LineTraceEnd);
+	}
 }
 
 
@@ -82,7 +96,6 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const {
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT PlayerViewPointLocation, OUT PlayerViewPointRotation);
-
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
 
 	///Draw a red trace in theh world to visualise
@@ -102,5 +115,5 @@ FHitResult UGrabber::GetFirstPhysicsBodyInReach() const {
 		UE_LOG(LogTemp, Warning, TEXT("Line Trace hit: %s"), *(ActorHit->GetName()));
 	}
 
-	return FHitResult();
+	return Hit;
 }
