@@ -46,4 +46,12 @@ private:
 
 	// Return hit for first physics body in reach
 	FHitResult GetFirstPhysicsBodyInReach() const;
+
+	// Return current Start of reach line
+	FVector GetReachLineStart() const;
+
+	// Return current end of reach line
+	FVector GetReachLineEnd() const;
+
+	
 };
