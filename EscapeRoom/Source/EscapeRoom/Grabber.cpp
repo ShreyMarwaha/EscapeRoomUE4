@@ -54,14 +54,19 @@ void UGrabber::Grab(){
 	auto ActorHIt = HitResult.GetActor();
 
 	/// iF we hit something attach a pysics handle
-	if(ActorHIt)
+	if (ActorHIt)
+	{
+		if (!PhysicsHandle) { return; }
 		// attach physics handle
 		PhysicsHandle->GrabComponent(ComponentToGrab, NAME_None, ComponentToGrab->GetOwner()->GetActorLocation(), true);
 		//NAME_None-No bones needed, true-allow rotation
+	}
 }
 
 
 void UGrabber::Release(){
+	if (!PhysicsHandle) { return; }
+
 	UE_LOG(LogTemp, Warning, TEXT("Grab released"));
 	PhysicsHandle->ReleaseComponent();
 }
@@ -71,6 +76,7 @@ void UGrabber::Release(){
 void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction){
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	
+	if (!PhysicsHandle) { return; }
 	// if the physics hadle is attached
 	if (PhysicsHandle->GrabbedComponent)
 	{	// move the obj the we are holding
